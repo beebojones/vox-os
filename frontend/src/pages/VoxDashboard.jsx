@@ -52,6 +52,9 @@ export default function VoxDashboard() {
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
+  const [showCalendarConnect, setShowCalendarConnect] = useState(false);
+  const [calendarProvider, setCalendarProvider] = useState(null);
+
   /* ================= HELPERS ================= */
 
   const scrollToBottom = () => {
@@ -197,7 +200,11 @@ export default function VoxDashboard() {
                 <CollapsibleContent>
                   <div className="calendar-content">
                     <div className="calendar-inner">
-                      <CalendarPanel events={events} />
+                      <CalendarPanel
+                        events={events}
+                        isConnected={false}
+                        onRequestConnect={() => setShowCalendarConnect(true)}
+                      />
                     </div>
                   </div>
                 </CollapsibleContent>
@@ -292,4 +299,5 @@ export default function VoxDashboard() {
     </div>
   );
 }
+
 
