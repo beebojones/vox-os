@@ -195,7 +195,11 @@ export default function VoxDashboard() {
                   {showCalendar ? <ChevronUp /> : <ChevronDown />}
                 </CollapsibleTrigger>
                 <CollapsibleContent>
-                  <CalendarPanel events={events} />
+                  <div className="calendar-content">
+                    <div className="calendar-inner">
+                      <CalendarPanel events={events} />
+                    </div>
+                  </div>
                 </CollapsibleContent>
               </div>
             </Collapsible>
@@ -288,3 +292,4 @@ export default function VoxDashboard() {
     </div>
   );
 }
+
