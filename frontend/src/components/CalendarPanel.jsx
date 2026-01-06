@@ -28,6 +28,7 @@ export default function CalendarPanel({
   onEditEvent,
   onDeleteEvent,
   isConnected = false,
+  onRequestConnect,
 }) {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [viewMode, setViewMode] = useState(VIEW_MODES.MONTH);
@@ -78,24 +79,6 @@ export default function CalendarPanel({
       day: "numeric",
     });
 
-  const navigateMonth = (direction) => {
-    const newMonth = new Date(currentMonth);
-    newMonth.setMonth(currentMonth.getMonth() + direction);
-    setCurrentMonth(newMonth);
-  };
-
-  const navigateWeek = (direction) => {
-    const newDate = new Date(selectedDate);
-    newDate.setDate(selectedDate.getDate() + direction * 7);
-    setSelectedDate(newDate);
-  };
-
-  const navigateDay = (direction) => {
-    const newDate = new Date(selectedDate);
-    newDate.setDate(selectedDate.getDate() + direction);
-    setSelectedDate(newDate);
-  };
-
   const handleDateSelect = (date) => {
     if (!date) return;
     setSelectedDate(date);
@@ -112,10 +95,10 @@ export default function CalendarPanel({
       key={event.id}
       className={`p-2 rounded-lg bg-black/40 border-l-2 border-neon-cyan/50 ${
         compact ? "text-[10px]" : "text-xs"
-      } group relative`}
+      } group`}
     >
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1 text-soft mb-1">
+      <div className="flex justify-between mb-1">
+        <div className="flex items-center gap-1 text-soft">
           <Clock className="w-3 h-3" />
           <span>{event.is_all_day ? "All day" : formatTime(event.start)}</span>
         </div>
@@ -144,7 +127,7 @@ export default function CalendarPanel({
         )}
       </div>
 
-      <div className={`font-medium text-white/90 ${compact ? "truncate" : ""}`}>
+      <div className={`font-medium ${compact ? "truncate" : ""}`}>
         {event.title}
       </div>
 
@@ -190,12 +173,12 @@ export default function CalendarPanel({
       />
 
       <div className="border-t border-white/10 pt-3">
-        <div className="flex items-center justify-between mb-2">
-          <div className="text-xs text-soft">{formatDate(selectedDate)}</div>
+        <div className="flex justify-between mb-2 text-xs text-soft">
+          {formatDate(selectedDate)}
           {isConnected && (
             <button
               onClick={() => onAddEvent?.(selectedDate)}
-              className="console-button text-[10px] px-2 py-1"
+              className="console-button text-[10px]"
             >
               <Plus className="w-3 h-3" />
               Add
@@ -210,9 +193,7 @@ export default function CalendarPanel({
             )
           ) : (
             <p className="text-xs text-soft/60 text-center py-2">
-              {isConnected
-                ? "No events. Click Add to create one."
-                : "No events"}
+              No events
             </p>
           )}
         </div>
@@ -220,92 +201,66 @@ export default function CalendarPanel({
     </div>
   );
 
-  const renderWeekView = () => {
-    const weekEvents = getWeekEvents();
-    const today = new Date().toDateString();
-
-    return (
-      <ScrollArea className="h-64">
-        <div className="space-y-2">
-          {weekEvents.map(({ date, events: dayEvents }) => (
-            <div
-              key={date.toISOString()}
-              className={`p-2 rounded-lg ${
-                date.toDateString() === today
-                  ? "bg-neon-cyan/10 border border-neon-cyan/30"
-                  : "bg-black/20"
-              }`}
-              onClick={() => handleDateSelect(date)}
-            >
-              <div className="flex justify-between mb-1">
-                <span className="text-xs font-medium">
-                  {date.toLocaleDateString([], {
-                    weekday: "short",
-                    day: "numeric",
-                  })}
-                </span>
-                {dayEvents.length > 0 && (
-                  <span className="text-[10px] text-soft">
-                    {dayEvents.length} event
-                    {dayEvents.length > 1 ? "s" : ""}
-                  </span>
-                )}
-              </div>
-
-              <div className="space-y-1">
-                {dayEvents.slice(0, 2).map((event) =>
-                  renderEvent(event, true)
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </ScrollArea>
-    );
-  };
-
-  const renderDayView = () => {
-    const dayEvents = getEventsForDate(selectedDate);
-    const isToday =
-      selectedDate.toDateString() === new Date().toDateString();
-
-    return (
-      <div className="space-y-3">
-        <ScrollArea className="h-64">
-          <div className="space-y-2">
-            {dayEvents.length > 0 ? (
-              dayEvents.map((event) => renderEvent(event))
-            ) : (
-              <div className="text-center py-8">
-                <CalendarIcon className="w-8 h-8 mx-auto mb-2 text-soft/40" />
-                <p className="text-xs text-soft/60">No events scheduled</p>
-              </div>
-            )}
-          </div>
-        </ScrollArea>
-
-        {isConnected && (
-          <button
-            onClick={() => onAddEvent?.(selectedDate)}
-            className="console-button w-full text-xs"
+  const renderWeekView = () => (
+    <ScrollArea className="h-64">
+      <div className="space-y-2">
+        {getWeekEvents().map(({ date, events }) => (
+          <div
+            key={date.toISOString()}
+            className="p-2 rounded-lg bg-black/20"
+            onClick={() => handleDateSelect(date)}
           >
-            <Plus className="w-3 h-3" />
-            Add Event
-          </button>
+            <div className="flex justify-between text-xs mb-1">
+              <span>{formatDate(date)}</span>
+              {events.length > 0 && (
+                <span className="text-soft">
+                  {events.length} event{events.length > 1 ? "s" : ""}
+                </span>
+              )}
+            </div>
+            <div className="space-y-1">
+              {events.slice(0, 2).map((event) =>
+                renderEvent(event, true)
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </ScrollArea>
+  );
+
+  const renderDayView = () => (
+    <ScrollArea className="h-64">
+      <div className="space-y-2">
+        {getEventsForDate(selectedDate).length > 0 ? (
+          getEventsForDate(selectedDate).map((event) =>
+            renderEvent(event)
+          )
+        ) : (
+          <div className="text-center py-8">
+            <CalendarIcon className="w-8 h-8 mx-auto mb-2 text-soft/40" />
+            <p className="text-xs text-soft/60">No events scheduled</p>
+          </div>
         )}
       </div>
-    );
-  };
+    </ScrollArea>
+  );
 
   return (
-    <div
-      className="calendar-root space-y-4"
-      data-testid="calendar-full-panel"
-    >
+    <div className="calendar-root space-y-4">
+      {!isConnected && (
+        <button
+          onClick={onRequestConnect}
+          className="console-button w-full text-xs"
+        >
+          Connect Calendar
+        </button>
+      )}
+
       <div className="flex gap-1 p-1 bg-black/30 rounded-lg">
         <button
           onClick={() => setViewMode(VIEW_MODES.MONTH)}
-          className={`flex-1 py-1.5 text-xs rounded ${
+          className={`flex-1 text-xs py-1 rounded ${
             viewMode === VIEW_MODES.MONTH
               ? "bg-neon-cyan/20 text-neon-cyan"
               : "text-soft"
@@ -317,7 +272,7 @@ export default function CalendarPanel({
 
         <button
           onClick={() => setViewMode(VIEW_MODES.WEEK)}
-          className={`flex-1 py-1.5 text-xs rounded ${
+          className={`flex-1 text-xs py-1 rounded ${
             viewMode === VIEW_MODES.WEEK
               ? "bg-neon-cyan/20 text-neon-cyan"
               : "text-soft"
@@ -329,7 +284,7 @@ export default function CalendarPanel({
 
         <button
           onClick={() => setViewMode(VIEW_MODES.DAY)}
-          className={`flex-1 py-1.5 text-xs rounded ${
+          className={`flex-1 text-xs py-1 rounded ${
             viewMode === VIEW_MODES.DAY
               ? "bg-neon-cyan/20 text-neon-cyan"
               : "text-soft"
