@@ -77,14 +77,41 @@ button, input, a {
   50% { opacity: 0.5; }
 }
 
+/* ===== Calendar containment and centering ===== */
+
+.calendar-content {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.calendar-inner {
+  width: 100%;
+  max-width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.calendar-inner > * {
+  max-width: 100%;
+}
+
+.calendar-root {
+  width: 100%;
+  max-width: 100%;
+}
+
 /* Emergent visual overrides (high specificity, non-destructive) */
 body .console-card {
   background: rgba(5, 5, 16, 0.96) !important;
   border: 1px solid rgba(0, 246, 255, 0.4) !important;
   border-radius: 1rem !important;
-  box-shadow: 0 0 10px rgba(0, 246, 255, 0.12),
-              0 0 30px rgba(0, 246, 255, 0.06),
-              0 0 60px rgba(255, 0, 212, 0.04) !important;
+  box-shadow:
+    0 0 10px rgba(0, 246, 255, 0.12),
+    0 0 30px rgba(0, 246, 255, 0.06),
+    0 0 60px rgba(255, 0, 212, 0.04) !important;
 }
 
 body .console-button {
@@ -98,7 +125,11 @@ body .console-input {
 }
 
 body .chat-message.user {
-  background: linear-gradient(135deg, rgba(0, 246, 255, 0.15), rgba(154, 77, 255, 0.1)) !important;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 246, 255, 0.15),
+    rgba(154, 77, 255, 0.1)
+  ) !important;
   border: 1px solid rgba(0, 246, 255, 0.3) !important;
 }
 
