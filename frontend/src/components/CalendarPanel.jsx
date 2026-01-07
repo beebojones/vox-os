@@ -13,6 +13,7 @@ import {
   Plus,
   Edit2,
   Trash2,
+  Link as LinkIcon,
 } from "lucide-react";
 
 const VIEW_MODES = {
@@ -28,11 +29,13 @@ export default function CalendarPanel({
   onEditEvent,
   onDeleteEvent,
   isConnected = false,
-  onRequestConnect,
 }) {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [viewMode, setViewMode] = useState(VIEW_MODES.MONTH);
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [showConnectOptions, setShowConnectOptions] = useState(false);
+
+  /* ================= HELPERS ================= */
 
   const getEventsForDate = (date) => {
     const dateStr = date.toISOString().split("T")[0];
@@ -46,30 +49,21 @@ export default function CalendarPanel({
     const startOfWeek = new Date(selectedDate);
     startOfWeek.setDate(selectedDate.getDate() - selectedDate.getDay());
 
-    const weekEvents = [];
-    for (let i = 0; i < 7; i++) {
+    return Array.from({ length: 7 }).map((_, i) => {
       const day = new Date(startOfWeek);
       day.setDate(startOfWeek.getDate() + i);
-      weekEvents.push({
-        date: day,
-        events: getEventsForDate(day),
-      });
-    }
-    return weekEvents;
+      return { date: day, events: getEventsForDate(day) };
+    });
   };
 
-  const formatTime = (isoString) => {
-    if (!isoString || !isoString.includes("T")) return "All day";
-    try {
-      const date = new Date(isoString);
-      return date.toLocaleTimeString([], {
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      });
-    } catch {
-      return isoString;
-    }
+  const formatTime = (iso) => {
+    if (!iso || !iso.includes("T")) return "All day";
+    const d = new Date(iso);
+    return d.toLocaleTimeString([], {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
   };
 
   const formatDate = (date) =>
@@ -86,55 +80,44 @@ export default function CalendarPanel({
   };
 
   const datesWithEvents = events.map((e) => {
-    const dateStr = e.start?.split("T")[0] || e.date;
-    return new Date(`${dateStr}T00:00:00`);
+    const d = e.start?.split("T")[0] || e.date;
+    return new Date(`${d}T00:00:00`);
   });
+
+  /* ================= RENDER HELPERS ================= */
 
   const renderEvent = (event, compact = false) => (
     <div
       key={event.id}
       className={`p-2 rounded-lg bg-black/40 border-l-2 border-neon-cyan/50 ${
         compact ? "text-[10px]" : "text-xs"
-      } group`}
+      }`}
     >
-      <div className="flex justify-between mb-1">
-        <div className="flex items-center gap-1 text-soft">
+      <div className="flex items-center justify-between mb-1 text-soft">
+        <div className="flex items-center gap-1">
           <Clock className="w-3 h-3" />
-          <span>{event.is_all_day ? "All day" : formatTime(event.start)}</span>
+          {event.is_all_day ? "All day" : formatTime(event.start)}
         </div>
-
         {isConnected && !compact && (
-          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onEditEvent?.(event);
-              }}
-              className="p-1 text-soft hover:text-neon-cyan"
-            >
+          <div className="flex gap-1">
+            <button onClick={() => onEditEvent?.(event)}>
               <Edit2 className="w-3 h-3" />
             </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onDeleteEvent?.(event.id);
-              }}
-              className="p-1 text-soft hover:text-neon-orange"
-            >
+            <button onClick={() => onDeleteEvent?.(event.id)}>
               <Trash2 className="w-3 h-3" />
             </button>
           </div>
         )}
       </div>
 
-      <div className={`font-medium ${compact ? "truncate" : ""}`}>
+      <div className="font-medium text-white/90 truncate">
         {event.title}
       </div>
 
       {!compact && event.location && (
         <div className="flex items-center gap-1 text-soft mt-1">
           <MapPin className="w-3 h-3" />
-          <span className="truncate">{event.location}</span>
+          {event.location}
         </div>
       )}
 
@@ -143,15 +126,16 @@ export default function CalendarPanel({
           href={event.html_link}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-1 text-neon-cyan/70 hover:text-neon-cyan mt-1"
-          onClick={(e) => e.stopPropagation()}
+          className="flex items-center gap-1 text-neon-cyan mt-1"
         >
           <ExternalLink className="w-3 h-3" />
-          <span>Open</span>
+          Open
         </a>
       )}
     </div>
   );
+
+  /* ================= VIEWS ================= */
 
   const renderMonthView = () => (
     <div className="space-y-4">
@@ -161,7 +145,6 @@ export default function CalendarPanel({
         onSelect={handleDateSelect}
         month={currentMonth}
         onMonthChange={setCurrentMonth}
-        className="rounded-md"
         modifiers={{ hasEvents: datesWithEvents }}
         modifiersStyles={{
           hasEvents: {
@@ -177,8 +160,8 @@ export default function CalendarPanel({
           {formatDate(selectedDate)}
           {isConnected && (
             <button
-              onClick={() => onAddEvent?.(selectedDate)}
               className="console-button text-[10px]"
+              onClick={() => onAddEvent?.(selectedDate)}
             >
               <Plus className="w-3 h-3" />
               Add
@@ -187,12 +170,10 @@ export default function CalendarPanel({
         </div>
 
         <div className="space-y-2 max-h-32 overflow-y-auto">
-          {getEventsForDate(selectedDate).length > 0 ? (
-            getEventsForDate(selectedDate).map((event) =>
-              renderEvent(event)
-            )
+          {getEventsForDate(selectedDate).length ? (
+            getEventsForDate(selectedDate).map((e) => renderEvent(e))
           ) : (
-            <p className="text-xs text-soft/60 text-center py-2">
+            <p className="text-xs text-soft/60 text-center">
               No events
             </p>
           )}
@@ -201,103 +182,96 @@ export default function CalendarPanel({
     </div>
   );
 
-  const renderWeekView = () => (
-    <ScrollArea className="h-64">
-      <div className="space-y-2">
-        {getWeekEvents().map(({ date, events }) => (
-          <div
-            key={date.toISOString()}
-            className="p-2 rounded-lg bg-black/20"
-            onClick={() => handleDateSelect(date)}
-          >
-            <div className="flex justify-between text-xs mb-1">
-              <span>{formatDate(date)}</span>
-              {events.length > 0 && (
-                <span className="text-soft">
-                  {events.length} event{events.length > 1 ? "s" : ""}
-                </span>
-              )}
-            </div>
-            <div className="space-y-1">
-              {events.slice(0, 2).map((event) =>
-                renderEvent(event, true)
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
-    </ScrollArea>
-  );
-
-  const renderDayView = () => (
-    <ScrollArea className="h-64">
-      <div className="space-y-2">
-        {getEventsForDate(selectedDate).length > 0 ? (
-          getEventsForDate(selectedDate).map((event) =>
-            renderEvent(event)
-          )
-        ) : (
-          <div className="text-center py-8">
-            <CalendarIcon className="w-8 h-8 mx-auto mb-2 text-soft/40" />
-            <p className="text-xs text-soft/60">No events scheduled</p>
-          </div>
-        )}
-      </div>
-    </ScrollArea>
-  );
+  /* ================= RENDER ================= */
 
   return (
-    <div className="calendar-root space-y-4">
+    <div className="space-y-4">
+      {/* CONNECT */}
       {!isConnected && (
-        <button
-          onClick={onRequestConnect}
-          className="console-button w-full text-xs"
-        >
-          Connect Calendar
-        </button>
+        <div className="space-y-3">
+          <button
+            className="console-button w-full flex items-center justify-center gap-2"
+            onClick={() =>
+              setShowConnectOptions((prev) => !prev)
+            }
+          >
+            <LinkIcon className="w-4 h-4" />
+            Connect Calendar
+          </button>
+
+          {showConnectOptions && (
+            <div className="space-y-2">
+              <button
+                className="console-button w-full flex items-center gap-2"
+                onClick={() =>
+                  (window.location.href =
+                    "https://voxconsole.com/api/auth/google")
+                }
+              >
+                <img
+                  src="/icons/google.svg"
+                  alt=""
+                  className="w-4 h-4"
+                />
+                Google Calendar
+              </button>
+
+              <button
+                className="console-button w-full flex items-center gap-2"
+                onClick={() =>
+                  (window.location.href =
+                    "https://voxconsole.com/api/auth/outlook")
+                }
+              >
+                <img
+                  src="/icons/outlook.svg"
+                  alt=""
+                  className="w-4 h-4"
+                />
+                Outlook Calendar
+              </button>
+            </div>
+          )}
+        </div>
       )}
 
+      {/* VIEW MODE */}
       <div className="flex gap-1 p-1 bg-black/30 rounded-lg">
-        <button
-          onClick={() => setViewMode(VIEW_MODES.MONTH)}
-          className={`flex-1 text-xs py-1 rounded ${
-            viewMode === VIEW_MODES.MONTH
-              ? "bg-neon-cyan/20 text-neon-cyan"
-              : "text-soft"
-          }`}
-        >
-          <Grid3X3 className="w-3 h-3 inline mr-1" />
-          Month
-        </button>
-
-        <button
-          onClick={() => setViewMode(VIEW_MODES.WEEK)}
-          className={`flex-1 text-xs py-1 rounded ${
-            viewMode === VIEW_MODES.WEEK
-              ? "bg-neon-cyan/20 text-neon-cyan"
-              : "text-soft"
-          }`}
-        >
-          <List className="w-3 h-3 inline mr-1" />
-          Week
-        </button>
-
-        <button
-          onClick={() => setViewMode(VIEW_MODES.DAY)}
-          className={`flex-1 text-xs py-1 rounded ${
-            viewMode === VIEW_MODES.DAY
-              ? "bg-neon-cyan/20 text-neon-cyan"
-              : "text-soft"
-          }`}
-        >
-          <CalendarIcon className="w-3 h-3 inline mr-1" />
-          Day
-        </button>
+        {Object.values(VIEW_MODES).map((mode) => (
+          <button
+            key={mode}
+            onClick={() => setViewMode(mode)}
+            className={`flex-1 py-1.5 text-xs rounded ${
+              viewMode === mode
+                ? "bg-neon-cyan/20 text-neon-cyan"
+                : "text-soft"
+            }`}
+          >
+            {mode}
+          </button>
+        ))}
       </div>
 
       {viewMode === VIEW_MODES.MONTH && renderMonthView()}
-      {viewMode === VIEW_MODES.WEEK && renderWeekView()}
-      {viewMode === VIEW_MODES.DAY && renderDayView()}
+      {viewMode === VIEW_MODES.WEEK && (
+        <ScrollArea className="h-64">
+          {getWeekEvents().map(({ date, events }) => (
+            <div key={date.toISOString()} className="mb-2">
+              <div className="text-xs text-soft mb-1">
+                {formatDate(date)}
+              </div>
+              {events.map((e) => renderEvent(e, true))}
+            </div>
+          ))}
+        </ScrollArea>
+      )}
+      {viewMode === VIEW_MODES.DAY && (
+        <ScrollArea className="h-64">
+          {getEventsForDate(selectedDate).map((e) =>
+            renderEvent(e)
+          )}
+        </ScrollArea>
+      )}
     </div>
   );
 }
