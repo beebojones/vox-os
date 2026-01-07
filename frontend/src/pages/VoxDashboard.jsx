@@ -222,7 +222,7 @@ export default function VoxDashboard() {
               open={showCalendar}
               onOpenChange={setShowCalendar}
             >
-              <div className="console-card p-4 overflow-visible">
+              <div className="console-card p-4 overflow-visible mx-auto lg:mx-0">
                 <CollapsibleTrigger className="flex justify-between w-full mb-4">
                   <span className="uppercase text-sm tracking-wider">
                     Calendar
@@ -306,7 +306,7 @@ export default function VoxDashboard() {
           </div>
 
           {/* RIGHT COLUMN */}
-          <div className="lg:col-span-3 space-y-6">
+          <div className="lg:col-span-3 space-y-6 flex lg:block justify-center">
             <Collapsible
               open={showTasks}
               onOpenChange={setShowTasks}
@@ -354,3 +354,4 @@ export default function VoxDashboard() {
     </div>
   );
 }
+
