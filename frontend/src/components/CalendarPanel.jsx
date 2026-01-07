@@ -1,182 +1,99 @@
 import { useState } from "react";
-import { Calendar } from "@/components/ui/calendar";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Calendar as CalendarIcon,
-  Grid3X3,
-  List,
-  ChevronLeft,
-  ChevronRight,
-  Clock,
-  Plus,
-} from "lucide-react";
+import { Calendar, Link2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-const VIEW_MODES = {
-  MONTH: "month",
-  WEEK: "week",
-  DAY: "day",
-};
-
-export default function CalendarPanel({
-  events = [],
-  isConnected = false,
-  onAddEvent,
-}) {
-  const [viewMode, setViewMode] = useState(VIEW_MODES.MONTH);
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [currentMonth, setCurrentMonth] = useState(new Date());
-
-  const getEventsForDate = (date) => {
-    const key = date.toISOString().split("T")[0];
-    return events.filter((e) =>
-      (e.start || e.date || "").startsWith(key)
-    );
-  };
-
-  const formatDate = (date) =>
-    date.toLocaleDateString([], {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-    });
-
-  /* =========================
-     DISCONNECTED STATE
-     ========================= */
-
-  if (!isConnected) {
-    return (
-      <div className="flex flex-col items-center justify-center gap-4 py-6">
-        <CalendarIcon className="w-10 h-10 text-soft/40" />
-
-        <p className="text-xs text-soft text-center max-w-[220px]">
-          Connect a calendar to see upcoming events and daily plans.
-        </p>
-
-        <div className="w-full space-y-2">
-          <button
-            className="console-button w-full flex items-center gap-3 justify-start"
-            onClick={() => console.log("Google Calendar connect")}
-          >
-            <img
-              src="/icons/google-calendar.png"
-              alt="Google Calendar"
-              className="w-5 h-5"
-            />
-            <span>Google Calendar</span>
-          </button>
-
-          <button
-            className="console-button w-full flex items-center gap-3 justify-start"
-            onClick={() => console.log("Outlook Calendar connect")}
-          >
-            <img
-              src="/icons/outlook-calendar.png"
-              alt="Outlook Calendar"
-              className="w-5 h-5"
-            />
-            <span>Outlook Calendar</span>
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  /* =========================
-     CONNECTED STATE
-     ========================= */
+export default function CalendarPanel() {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [showProviders, setShowProviders] = useState(false);
 
   return (
-    <div className="w-full flex flex-col items-center gap-4">
-      {/* View Switcher */}
-      <div className="flex w-full gap-1 p-1 bg-black/30 rounded-lg">
-        <button
-          className={`flex-1 flex items-center justify-center gap-1 text-xs py-1.5 rounded ${
-            viewMode === VIEW_MODES.MONTH
-              ? "bg-neon-cyan/20 text-neon-cyan"
-              : "text-soft"
-          }`}
-          onClick={() => setViewMode(VIEW_MODES.MONTH)}
-        >
-          <Grid3X3 className="w-3 h-3" />
-          Month
-        </button>
+    <div className="console-card p-6">
+      {/* Header */}
+      <button
+        type="button"
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full flex items-center justify-between"
+      >
+        <div className="flex items-center gap-3">
+          <Calendar className="h-5 w-5 text-cyan-300" />
+          <h2 className="text-lg font-semibold tracking-wide">
+            CALENDAR
+          </h2>
+        </div>
 
-        <button
-          className={`flex-1 flex items-center justify-center gap-1 text-xs py-1.5 rounded ${
-            viewMode === VIEW_MODES.WEEK
-              ? "bg-neon-cyan/20 text-neon-cyan"
-              : "text-soft"
-          }`}
-          onClick={() => setViewMode(VIEW_MODES.WEEK)}
+        <span
+          className={cn(
+            "transition-transform",
+            isExpanded && "rotate-180"
+          )}
         >
-          <List className="w-3 h-3" />
-          Week
-        </button>
-      </div>
+          ⌃
+        </span>
+      </button>
 
-      {/* Month View */}
-      {viewMode === VIEW_MODES.MONTH && (
-        <div className="w-full flex justify-center">
-          <Calendar
-            mode="single"
-            selected={selectedDate}
-            onSelect={setSelectedDate}
-            month={currentMonth}
-            onMonthChange={setCurrentMonth}
-            className="rounded-md"
-          />
+      {/* Content */}
+      {isExpanded && (
+        <div className="mt-8 flex flex-col items-center text-center">
+          {/* Icon */}
+          <div className="mb-4">
+            <Calendar className="h-10 w-10 text-white/90" />
+          </div>
+
+          {/* Description */}
+          <p className="text-white/80 max-w-md mb-6">
+            Connect a calendar to see upcoming events and daily plans.
+          </p>
+
+          {/* Connect Button */}
+          <button
+            onClick={() => setShowProviders(true)}
+            className="mb-6 w-full max-w-md rounded-full border border-white/20
+                       bg-black/40 px-6 py-3 text-base font-medium
+                       flex items-center justify-center gap-2
+                       shadow-[0_0_25px_rgba(168,85,247,0.25)]
+                       hover:shadow-[0_0_35px_rgba(168,85,247,0.45)]
+                       transition"
+          >
+            <Link2 className="h-5 w-5" />
+            Connect Calendar
+          </button>
+
+          {/* Providers */}
+          {showProviders && (
+            <div className="w-full max-w-md space-y-4">
+              {/* Google */}
+              <button
+                type="button"
+                className="w-full rounded-full bg-black/40 border border-white/10
+                           px-6 py-3 flex items-center gap-3
+                           hover:border-white/25 transition"
+              >
+                <img
+                  src="/icons/google-calendar.svg"
+                  alt="Google Calendar"
+                  className="h-6 w-6"
+                />
+                <span className="text-base">Google Calendar</span>
+              </button>
+
+              {/* Outlook */}
+              <button
+                type="button"
+                className="w-full rounded-full bg-black/40 border border-white/10
+                           px-6 py-3 flex items-center gap-3
+                           hover:border-white/25 transition"
+              >
+                <img
+                  src="/icons/outlook-calendar.png"
+                  alt="Outlook Calendar"
+                  className="h-6 w-6"
+                />
+                <span className="text-base">Outlook Calendar</span>
+              </button>
+            </div>
+          )}
         </div>
       )}
-
-      {/* Events */}
-      <div className="w-full border-t border-white/10 pt-3">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-xs text-soft">
-            {formatDate(selectedDate)}
-          </span>
-
-          <button
-            onClick={() => onAddEvent?.(selectedDate)}
-            className="console-button text-[10px] px-2 py-1"
-          >
-            <Plus className="w-3 h-3" />
-            Add
-          </button>
-        </div>
-
-        <ScrollArea className="max-h-40">
-          <div className="space-y-2">
-            {getEventsForDate(selectedDate).length > 0 ? (
-              getEventsForDate(selectedDate).map((event) => (
-                <div
-                  key={event.id}
-                  className="p-2 text-xs rounded-lg bg-black/40 border-l-2 border-neon-cyan/50"
-                >
-                  <div className="flex items-center gap-1 text-soft mb-1">
-                    <Clock className="w-3 h-3" />
-                    <span>
-                      {event.start
-                        ? new Date(event.start).toLocaleTimeString([], {
-                            hour: "numeric",
-                            minute: "2-digit",
-                          })
-                        : "All day"}
-                    </span>
-                  </div>
-                  <div className="font-medium text-white/90">
-                    {event.title}
-                  </div>
-                </div>
-              ))
-            ) : (
-              <p className="text-xs text-soft/60 text-center py-4">
-                No events scheduled
-              </p>
-            )}
-          </div>
-        </ScrollArea>
-      </div>
     </div>
   );
 }
