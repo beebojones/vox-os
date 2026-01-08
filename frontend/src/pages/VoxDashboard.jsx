@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { toast } from "sonner";
+import TasksPanel from "@/components/TasksPanel";
 
 import {
   Send,
@@ -354,4 +355,5 @@ export default function VoxDashboard() {
     </div>
   );
 }
+
 
