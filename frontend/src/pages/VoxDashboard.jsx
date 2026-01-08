@@ -307,7 +307,7 @@ export default function VoxDashboard() {
           </div>
 
           {/* RIGHT COLUMN */}
-          <div className="lg:col-span-3 space-y-6 flex lg:block justify-center">
+          <div className="lg:col-span-3 space-y-6">
             <TasksPanel
               tasks={tasks}
               setTasks={setTasks}
@@ -339,5 +339,6 @@ export default function VoxDashboard() {
     </div>
   );
 }
+
 
 
