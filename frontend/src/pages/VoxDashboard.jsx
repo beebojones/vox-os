@@ -143,6 +143,7 @@ export default function VoxDashboard() {
       });
 
       setMessages((prev) => [...prev, res.data]);
+      initializeData(); // 👈 refresh tasks, memories, events
     } catch (err) {
       console.error("Chat error:", err);
       toast.error("Failed to send message");
@@ -307,3 +308,4 @@ export default function VoxDashboard() {
     </div>
   );
 }
+
