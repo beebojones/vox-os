@@ -57,13 +57,11 @@ export default function VoxDashboard() {
 
   const scrollToBottom = () => {
     const node = messagesEndRef.current;
-    if (node) {
-      const viewport = node.closest(
-        '[data-radix-scroll-area-viewport]'
-      );
-      if (viewport) viewport.scrollTop = viewport.scrollHeight;
-      else node.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    }
+    if (!node) return;
+
+    const viewport = node.closest("[data-radix-scroll-area-viewport]");
+    if (viewport) viewport.scrollTop = viewport.scrollHeight;
+    else node.scrollIntoView({ behavior: "smooth", block: "nearest" });
   };
 
   useEffect(() => {
@@ -91,11 +89,13 @@ export default function VoxDashboard() {
           ? safeArray(tasksRes.value.data)
           : []
       );
+
       setMemories(
         memoriesRes.status === "fulfilled"
           ? safeArray(memoriesRes.value.data)
           : []
       );
+
       setEvents(
         eventsRes.status === "fulfilled"
           ? safeArray(eventsRes.value.data)
@@ -163,9 +163,6 @@ export default function VoxDashboard() {
 
   /* ================= COMPUTED ================= */
 
-  const pendingTasks = safeArray(tasks).filter(
-    (t) => t.status !== "completed"
-  ).length;
   const statusLabel = isLoading ? "Thinking..." : "Ready to assist";
 
   /* ================= RENDER ================= */
@@ -174,11 +171,9 @@ export default function VoxDashboard() {
     <div className="console-wrapper">
       <div className="max-w-7xl mx-auto">
         <header className="mb-8">
-          <div className="flex items-center gap-4 mb-2">
-            <h1 className="title-gradient text-4xl sm:text-5xl font-bold tracking-[0.18em] uppercase">
-              VOX OS
-            </h1>
-          </div>
+          <h1 className="title-gradient text-4xl sm:text-5xl font-bold tracking-[0.18em] uppercase">
+            VOX OS
+          </h1>
           <p className="text-soft text-sm tracking-wide uppercase">
             Personal Assistant • Good {getTimeOfDay()}
           </p>
@@ -188,10 +183,7 @@ export default function VoxDashboard() {
           {/* LEFT COLUMN */}
           <div className="lg:col-span-3 space-y-6">
             {/* DAILY BRIEFING */}
-            <Collapsible
-              open={showBriefing}
-              onOpenChange={setShowBriefing}
-            >
+            <Collapsible open={showBriefing} onOpenChange={setShowBriefing}>
               <div className="console-card p-4">
                 <CollapsibleTrigger className="flex justify-between w-full">
                   <span className="uppercase text-sm tracking-wider">
@@ -199,18 +191,13 @@ export default function VoxDashboard() {
                   </span>
                   {showBriefing ? <ChevronUp /> : <ChevronDown />}
                 </CollapsibleTrigger>
+
                 <CollapsibleContent>
                   <div className="flex gap-2 mt-3">
-                    <button
-                      className="console-button flex-1 text-xs"
-                      disabled
-                    >
+                    <button className="console-button flex-1 text-xs" disabled>
                       <Sun className="w-3 h-3" /> Morning
                     </button>
-                    <button
-                      className="console-button flex-1 text-xs"
-                      disabled
-                    >
+                    <button className="console-button flex-1 text-xs" disabled>
                       <Moon className="w-3 h-3" /> Evening
                     </button>
                   </div>
@@ -219,11 +206,8 @@ export default function VoxDashboard() {
             </Collapsible>
 
             {/* CALENDAR */}
-            <Collapsible
-              open={showCalendar}
-              onOpenChange={setShowCalendar}
-            >
-              <div className="console-card p-4 overflow-visible mx-auto lg:mx-0">
+            <Collapsible open={showCalendar} onOpenChange={setShowCalendar}>
+              <div className="console-card p-4">
                 <CollapsibleTrigger className="flex justify-between w-full mb-4">
                   <span className="uppercase text-sm tracking-wider">
                     Calendar
@@ -232,12 +216,7 @@ export default function VoxDashboard() {
                 </CollapsibleTrigger>
 
                 <CollapsibleContent>
-                  {/* CENTERED + CONTAINED */}
-                  <div className="flex justify-center">
-                    <div className="w-full max-w-[340px]">
-                      <CalendarPanel events={events} />
-                    </div>
-                  </div>
+                  <CalendarPanel events={events} />
                 </CollapsibleContent>
               </div>
             </Collapsible>
@@ -253,34 +232,25 @@ export default function VoxDashboard() {
                   </div>
                   <div>
                     <div className="text-sm font-medium">Vox</div>
-                    <div className="text-xs text-soft">
-                      {statusLabel}
-                    </div>
+                    <div className="text-xs text-soft">{statusLabel}</div>
                   </div>
                 </div>
-                <button
-                  onClick={clearChat}
-                  className="console-button text-xs"
-                >
+
+                <button onClick={clearChat} className="console-button text-xs">
                   <RefreshCw className="w-3 h-3" /> Clear
                 </button>
               </div>
 
               <ScrollArea className="flex-1 p-4">
-                <div className="space-y-4">
-                  {messages.map((m) => (
-                    <div
-                      key={m.id}
-                      className={`chat-message ${m.role}`}
-                    >
-                      {m.content}
-                    </div>
-                  ))}
-                  {isLoading && (
-                    <div className="chat-message assistant">...</div>
-                  )}
-                  <div ref={messagesEndRef} />
-                </div>
+                {messages.map((m) => (
+                  <div key={m.id} className={`chat-message ${m.role}`}>
+                    {m.content}
+                  </div>
+                ))}
+                {isLoading && (
+                  <div className="chat-message assistant">…</div>
+                )}
+                <div ref={messagesEndRef} />
               </ScrollArea>
 
               <form
@@ -291,9 +261,7 @@ export default function VoxDashboard() {
                   <input
                     ref={inputRef}
                     value={inputValue}
-                    onChange={(e) =>
-                      setInputValue(e.target.value)
-                    }
+                    onChange={(e) => setInputValue(e.target.value)}
                     className="console-input flex-1"
                     disabled={isLoading}
                     placeholder="Ask Vox anything..."
@@ -311,12 +279,11 @@ export default function VoxDashboard() {
             <TasksPanel
               tasks={tasks}
               setTasks={setTasks}
+              open={showTasks}
+              onOpenChange={setShowTasks}
             />
-          
-            <Collapsible
-              open={showMemories}
-              onOpenChange={setShowMemories}
-            >
+
+            <Collapsible open={showMemories} onOpenChange={setShowMemories}>
               <div className="console-card p-4">
                 <CollapsibleTrigger className="flex justify-between items-center">
                   <span className="uppercase text-sm">Memory</span>
@@ -324,6 +291,7 @@ export default function VoxDashboard() {
                     {memories.length}
                   </span>
                 </CollapsibleTrigger>
+
                 <CollapsibleContent>
                   {safeArray(memories).map((m) => (
                     <div key={m.id} className="text-xs p-2">
@@ -339,6 +307,3 @@ export default function VoxDashboard() {
     </div>
   );
 }
-
-
-
