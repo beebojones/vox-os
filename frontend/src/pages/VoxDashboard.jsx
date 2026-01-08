@@ -308,27 +308,11 @@ export default function VoxDashboard() {
 
           {/* RIGHT COLUMN */}
           <div className="lg:col-span-3 space-y-6 flex lg:block justify-center">
-            <Collapsible
-              open={showTasks}
-              onOpenChange={setShowTasks}
-            >
-              <div className="console-card p-4">
-                <CollapsibleTrigger className="flex justify-between items-center">
-                  <span className="uppercase text-sm">Tasks</span>
-                  <span className="console-badge">
-                    {pendingTasks}
-                  </span>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  {safeArray(tasks).map((t) => (
-                    <div key={t.id} className="text-xs p-2">
-                      {t.title}
-                    </div>
-                  ))}
-                </CollapsibleContent>
-              </div>
-            </Collapsible>
-
+            <TasksPanel
+              tasks={tasks}
+              setTasks={setTasks}
+            />
+          
             <Collapsible
               open={showMemories}
               onOpenChange={setShowMemories}
@@ -355,5 +339,3 @@ export default function VoxDashboard() {
     </div>
   );
 }
-
-
