@@ -4,47 +4,54 @@ import {
   Plus,
   Pencil,
   Trash2,
-  ChevronUp,
-  ChevronDown,
+  X,
 } from "lucide-react";
 
-export default function TasksPanel({
-  tasks,
-  setTasks,
-  open,
-  onOpenChange,
-}) {
-  const [adding, setAdding] = useState(false);
-  const [newTask, setNewTask] = useState("");
+const PRIORITIES = ["LOW", "MEDIUM", "HIGH"];
+
+export default function TasksPanel({ tasks, setTasks }) {
+  const [isAdding, setIsAdding] = useState(false);
+  const [newText, setNewText] = useState("");
+  const [newPriority, setNewPriority] = useState("LOW");
+
   const [editingId, setEditingId] = useState(null);
   const [editingText, setEditingText] = useState("");
   const [editingPriority, setEditingPriority] = useState("LOW");
 
+  function startAdd() {
+    setIsAdding(true);
+    setNewText("");
+    setNewPriority("LOW");
+  }
+
+  function cancelAdd() {
+    setIsAdding(false);
+    setNewText("");
+  }
+
   function addTask() {
-    if (!newTask.trim()) return;
+    if (!newText.trim()) return;
 
     setTasks((prev) => [
       ...prev,
       {
         id: crypto.randomUUID(),
-        title: newTask.trim(),
-        priority: editingPriority,
-        status: "pending",
+        text: newText.trim(),
+        priority: newPriority,
+        completed: false,
       },
     ]);
 
-    setNewTask("");
-    setEditingPriority("LOW");
-    setAdding(false);
+    cancelAdd();
   }
 
-  function toggleComplete(id) {
+  function completeTask(id) {
     setTasks((prev) => prev.filter((t) => t.id !== id));
   }
 
   function startEdit(task) {
     setEditingId(task.id);
-    setEditingText(task.title);
+    setEditingText(task.text);
     setEditingPriority(task.priority);
   }
 
@@ -52,12 +59,11 @@ export default function TasksPanel({
     setTasks((prev) =>
       prev.map((t) =>
         t.id === id
-          ? { ...t, title: editingText, priority: editingPriority }
+          ? { ...t, text: editingText, priority: editingPriority }
           : t
       )
     );
     setEditingId(null);
-    setEditingText("");
   }
 
   function deleteTask(id) {
@@ -65,140 +71,144 @@ export default function TasksPanel({
   }
 
   return (
-    <div className="console-card p-4">
+    <div className="console-card p-4 space-y-4">
       {/* Header */}
-      <button
-        onClick={() => onOpenChange(!open)}
-        className="flex items-center justify-between w-full mb-3"
-      >
+      <div className="flex justify-between items-center">
         <div className="flex items-center gap-2">
-          <CheckSquare className="text-purple-400" />
-          <span className="uppercase text-sm tracking-wider">
-            Tasks
-          </span>
+          <CheckSquare className="icon-purple" />
+          <span className="uppercase text-sm tracking-wide">Tasks</span>
           <span className="console-badge">{tasks.length}</span>
         </div>
-        {open ? <ChevronUp /> : <ChevronDown />}
-      </button>
+      </div>
 
-      {open && (
-        <>
-          {/* Add row */}
-          <div className="flex items-center gap-2 mb-3">
-            {adding ? (
-              <>
-                <input
-                  className="console-input flex-1"
-                  placeholder="Add a task..."
-                  value={newTask}
-                  onChange={(e) => setNewTask(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && addTask()}
-                  autoFocus
-                />
-                <select
-                  className="console-input w-24"
-                  value={editingPriority}
-                  onChange={(e) =>
-                    setEditingPriority(e.target.value)
-                  }
-                >
-                  <option>LOW</option>
-                  <option>MEDIUM</option>
-                  <option>HIGH</option>
-                </select>
-                <button
-                  className="icon-button"
-                  onClick={addTask}
-                >
-                  <Plus />
-                </button>
-              </>
-            ) : (
-              <button
-                className="console-button w-full justify-between"
-                onClick={() => setAdding(true)}
-              >
-                Add a task...
-                <Plus />
-              </button>
-            )}
+      {/* Add Row */}
+      {!isAdding ? (
+        <div className="flex items-center gap-2">
+          <div className="flex-1 console-input opacity-50 cursor-default">
+            Add a task...
           </div>
+          <button
+            className="icon-button round"
+            onClick={startAdd}
+            aria-label="Add task"
+          >
+            <Plus />
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <input
+            className="console-input w-full"
+            placeholder="Task description"
+            value={newText}
+            onChange={(e) => setNewText(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && addTask()}
+            autoFocus
+          />
 
-          {/* Tasks */}
-          <div className="space-y-2">
-            {tasks.map((task) => (
-              <div
-                key={task.id}
-                className="flex items-start gap-3 p-3 rounded-lg bg-black/30"
-              >
-                {/* Radio */}
-                <button
-                  className="task-radio mt-1"
-                  onClick={() => toggleComplete(task.id)}
-                />
+          <div className="flex items-center gap-2">
+            <select
+              className="console-select"
+              value={newPriority}
+              onChange={(e) => setNewPriority(e.target.value)}
+            >
+              {PRIORITIES.map((p) => (
+                <option key={p} value={p}>
+                  {p}
+                </option>
+              ))}
+            </select>
 
-                {/* Content */}
-                <div className="flex-1">
-                  {editingId === task.id ? (
-                    <>
-                      <input
-                        className="console-input mb-1"
-                        value={editingText}
-                        onChange={(e) =>
-                          setEditingText(e.target.value)
-                        }
-                        onKeyDown={(e) =>
-                          e.key === "Enter" && saveEdit(task.id)
-                        }
-                      />
-                      <select
-                        className="console-input w-24"
-                        value={editingPriority}
-                        onChange={(e) =>
-                          setEditingPriority(e.target.value)
-                        }
-                      >
-                        <option>LOW</option>
-                        <option>MEDIUM</option>
-                        <option>HIGH</option>
-                      </select>
-                    </>
-                  ) : (
-                    <>
-                      <div className="text-sm">
-                        {task.title}
-                      </div>
-                      <div className="text-xs text-soft mt-1">
-                        {task.priority}
-                      </div>
-                    </>
-                  )}
-                </div>
+            <button
+              className="icon-button round"
+              onClick={addTask}
+              aria-label="Confirm"
+            >
+              <Plus />
+            </button>
 
-                {/* Actions */}
-                <div className="flex gap-2">
-                  <button
-                    className="icon-button subtle"
-                    onClick={() =>
-                      editingId === task.id
-                        ? saveEdit(task.id)
-                        : startEdit(task)
+            <button
+              className="icon-button subtle"
+              onClick={cancelAdd}
+              aria-label="Cancel"
+            >
+              <X />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Task List */}
+      <div className="space-y-2">
+        {tasks.map((task) => (
+          <div key={task.id} className="task-row">
+            {/* Radio */}
+            <button
+              className="task-radio"
+              onClick={() => completeTask(task.id)}
+            />
+
+            {/* Content */}
+            <div className="flex-1">
+              {editingId === task.id ? (
+                <>
+                  <input
+                    className="task-edit-input"
+                    value={editingText}
+                    onChange={(e) => setEditingText(e.target.value)}
+                    onKeyDown={(e) =>
+                      e.key === "Enter" && saveEdit(task.id)
+                    }
+                    autoFocus
+                  />
+                  <select
+                    className="console-select mt-1"
+                    value={editingPriority}
+                    onChange={(e) =>
+                      setEditingPriority(e.target.value)
                     }
                   >
-                    <Pencil />
-                  </button>
-                  <button
-                    className="icon-button subtle"
-                    onClick={() => deleteTask(task.id)}
-                  >
-                    <Trash2 />
-                  </button>
-                </div>
-              </div>
-            ))}
+                    {PRIORITIES.map((p) => (
+                      <option key={p} value={p}>
+                        {p}
+                      </option>
+                    ))}
+                  </select>
+                </>
+              ) : (
+                <>
+                  <div className="task-title">{task.text}</div>
+                  <div className="task-meta">
+                    <span className={`priority ${task.priority.toLowerCase()}`}>
+                      {task.priority}
+                    </span>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Actions */}
+            <div className="task-actions">
+              <button
+                className="icon-button subtle"
+                onClick={() =>
+                  editingId === task.id
+                    ? saveEdit(task.id)
+                    : startEdit(task)
+                }
+              >
+                <Pencil />
+              </button>
+              <button
+                className="icon-button subtle"
+                onClick={() => deleteTask(task.id)}
+              >
+                <Trash2 />
+              </button>
+            </div>
           </div>
-        </>
-      )}
+        ))}
+      </div>
     </div>
   );
 }
