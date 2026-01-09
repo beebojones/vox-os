@@ -1,8 +1,11 @@
+import { useState } from "react";
 import {
   CheckSquare,
   Plus,
   Pencil,
   Trash2,
+  ChevronUp,
+  ChevronDown,
 } from "lucide-react";
 
 export default function TasksPanel({
@@ -11,6 +14,7 @@ export default function TasksPanel({
   open,
   onOpenChange,
 }) {
+  const [adding, setAdding] = useState(false);
   const [newTask, setNewTask] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [editingText, setEditingText] = useState("");
@@ -31,12 +35,11 @@ export default function TasksPanel({
 
     setNewTask("");
     setEditingPriority("LOW");
+    setAdding(false);
   }
 
   function toggleComplete(id) {
-    setTasks((prev) =>
-      prev.filter((t) => t.id !== id)
-    );
+    setTasks((prev) => prev.filter((t) => t.id !== id));
   }
 
   function startEdit(task) {
@@ -49,122 +52,130 @@ export default function TasksPanel({
     setTasks((prev) =>
       prev.map((t) =>
         t.id === id
-          ? {
-              ...t,
-              title: editingText,
-              priority: editingPriority,
-            }
+          ? { ...t, title: editingText, priority: editingPriority }
           : t
       )
     );
     setEditingId(null);
+    setEditingText("");
+  }
+
+  function deleteTask(id) {
+    setTasks((prev) => prev.filter((t) => t.id !== id));
   }
 
   return (
     <div className="console-card p-4">
       {/* Header */}
-      <div
-        className="flex justify-between items-center cursor-pointer"
+      <button
         onClick={() => onOpenChange(!open)}
+        className="flex items-center justify-between w-full mb-3"
       >
         <div className="flex items-center gap-2">
-          <CheckSquare className="icon-purple" />
-          <span className="uppercase text-sm">
+          <CheckSquare className="text-purple-400" />
+          <span className="uppercase text-sm tracking-wider">
             Tasks
           </span>
-          <span className="console-badge">
-            {tasks.length}
-          </span>
+          <span className="console-badge">{tasks.length}</span>
         </div>
-      </div>
+        {open ? <ChevronUp /> : <ChevronDown />}
+      </button>
 
       {open && (
         <>
           {/* Add row */}
-          <div className="flex items-center gap-2 mt-3">
-            <input
-              className="console-input flex-1"
-              placeholder="Add a task..."
-              value={newTask}
-              onChange={(e) =>
-                setNewTask(e.target.value)
-              }
-              onKeyDown={(e) =>
-                e.key === "Enter" && addTask()
-              }
-            />
-
-            <button
-              className="icon-button"
-              onClick={addTask}
-            >
-              <Plus />
-            </button>
+          <div className="flex items-center gap-2 mb-3">
+            {adding ? (
+              <>
+                <input
+                  className="console-input flex-1"
+                  placeholder="Add a task..."
+                  value={newTask}
+                  onChange={(e) => setNewTask(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && addTask()}
+                  autoFocus
+                />
+                <select
+                  className="console-input w-24"
+                  value={editingPriority}
+                  onChange={(e) =>
+                    setEditingPriority(e.target.value)
+                  }
+                >
+                  <option>LOW</option>
+                  <option>MEDIUM</option>
+                  <option>HIGH</option>
+                </select>
+                <button
+                  className="icon-button"
+                  onClick={addTask}
+                >
+                  <Plus />
+                </button>
+              </>
+            ) : (
+              <button
+                className="console-button w-full justify-between"
+                onClick={() => setAdding(true)}
+              >
+                Add a task...
+                <Plus />
+              </button>
+            )}
           </div>
 
-          {/* Task list */}
-          <div className="mt-4 space-y-3">
+          {/* Tasks */}
+          <div className="space-y-2">
             {tasks.map((task) => (
               <div
                 key={task.id}
-                className="flex items-start gap-3"
+                className="flex items-start gap-3 p-3 rounded-lg bg-black/30"
               >
+                {/* Radio */}
                 <button
-                  className="task-radio"
-                  onClick={() =>
-                    toggleComplete(task.id)
-                  }
+                  className="task-radio mt-1"
+                  onClick={() => toggleComplete(task.id)}
                 />
 
+                {/* Content */}
                 <div className="flex-1">
                   {editingId === task.id ? (
                     <>
                       <input
-                        className="task-edit-input"
+                        className="console-input mb-1"
                         value={editingText}
                         onChange={(e) =>
-                          setEditingText(
-                            e.target.value
-                          )
+                          setEditingText(e.target.value)
                         }
                         onKeyDown={(e) =>
-                          e.key === "Enter" &&
-                          saveEdit(task.id)
+                          e.key === "Enter" && saveEdit(task.id)
                         }
-                        autoFocus
                       />
                       <select
-                        className="console-select mt-1"
+                        className="console-input w-24"
                         value={editingPriority}
                         onChange={(e) =>
-                          setEditingPriority(
-                            e.target.value
-                          )
+                          setEditingPriority(e.target.value)
                         }
                       >
-                        <option value="LOW">
-                          LOW
-                        </option>
-                        <option value="MEDIUM">
-                          MEDIUM
-                        </option>
-                        <option value="HIGH">
-                          HIGH
-                        </option>
+                        <option>LOW</option>
+                        <option>MEDIUM</option>
+                        <option>HIGH</option>
                       </select>
                     </>
                   ) : (
                     <>
-                      <div className="task-title">
+                      <div className="text-sm">
                         {task.title}
                       </div>
-                      <div className="task-meta">
+                      <div className="text-xs text-soft mt-1">
                         {task.priority}
                       </div>
                     </>
                   )}
                 </div>
 
+                {/* Actions */}
                 <div className="flex gap-2">
                   <button
                     className="icon-button subtle"
@@ -178,14 +189,7 @@ export default function TasksPanel({
                   </button>
                   <button
                     className="icon-button subtle"
-                    onClick={() =>
-                      setTasks((prev) =>
-                        prev.filter(
-                          (t) =>
-                            t.id !== task.id
-                        )
-                      )
-                    }
+                    onClick={() => deleteTask(task.id)}
                   >
                     <Trash2 />
                   </button>
