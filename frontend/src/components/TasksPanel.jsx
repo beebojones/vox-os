@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   CheckSquare,
   Plus,
@@ -12,11 +11,10 @@ export default function TasksPanel({
   open,
   onOpenChange,
 }) {
-  const [isAdding, setIsAdding] = useState(false);
   const [newTask, setNewTask] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [editingText, setEditingText] = useState("");
-  const [editingPriority, setEditingPriority] = useState("MEDIUM");
+  const [editingPriority, setEditingPriority] = useState("LOW");
 
   function addTask() {
     if (!newTask.trim()) return;
@@ -32,8 +30,7 @@ export default function TasksPanel({
     ]);
 
     setNewTask("");
-    setEditingPriority("MEDIUM");
-    setIsAdding(false);
+    setEditingPriority("LOW");
   }
 
   function toggleComplete(id) {
@@ -63,10 +60,6 @@ export default function TasksPanel({
     setEditingId(null);
   }
 
-  function deleteTask(id) {
-    setTasks((prev) => prev.filter((t) => t.id !== id));
-  }
-
   return (
     <div className="console-card p-4">
       {/* Header */}
@@ -76,7 +69,9 @@ export default function TasksPanel({
       >
         <div className="flex items-center gap-2">
           <CheckSquare className="icon-purple" />
-          <span className="uppercase text-sm">Tasks</span>
+          <span className="uppercase text-sm">
+            Tasks
+          </span>
           <span className="console-badge">
             {tasks.length}
           </span>
@@ -87,41 +82,24 @@ export default function TasksPanel({
         <>
           {/* Add row */}
           <div className="flex items-center gap-2 mt-3">
-            {!isAdding && (
-              <button
-                className="icon-button"
-                onClick={() => setIsAdding(true)}
-              >
-                <Plus />
-              </button>
-            )}
+            <input
+              className="console-input flex-1"
+              placeholder="Add a task..."
+              value={newTask}
+              onChange={(e) =>
+                setNewTask(e.target.value)
+              }
+              onKeyDown={(e) =>
+                e.key === "Enter" && addTask()
+              }
+            />
 
-            {isAdding && (
-              <>
-                <input
-                  className="console-input flex-1"
-                  placeholder="Add a task..."
-                  value={newTask}
-                  onChange={(e) => setNewTask(e.target.value)}
-                  onKeyDown={(e) =>
-                    e.key === "Enter" && addTask()
-                  }
-                  autoFocus
-                />
-
-                <select
-                  className="console-select"
-                  value={editingPriority}
-                  onChange={(e) =>
-                    setEditingPriority(e.target.value)
-                  }
-                >
-                  <option value="LOW">LOW</option>
-                  <option value="MEDIUM">MEDIUM</option>
-                  <option value="HIGH">HIGH</option>
-                </select>
-              </>
-            )}
+            <button
+              className="icon-button"
+              onClick={addTask}
+            >
+              <Plus />
+            </button>
           </div>
 
           {/* Task list */}
@@ -131,13 +109,13 @@ export default function TasksPanel({
                 key={task.id}
                 className="flex items-start gap-3"
               >
-                {/* Radio */}
                 <button
                   className="task-radio"
-                  onClick={() => toggleComplete(task.id)}
+                  onClick={() =>
+                    toggleComplete(task.id)
+                  }
                 />
 
-                {/* Content */}
                 <div className="flex-1">
                   {editingId === task.id ? (
                     <>
@@ -145,7 +123,9 @@ export default function TasksPanel({
                         className="task-edit-input"
                         value={editingText}
                         onChange={(e) =>
-                          setEditingText(e.target.value)
+                          setEditingText(
+                            e.target.value
+                          )
                         }
                         onKeyDown={(e) =>
                           e.key === "Enter" &&
@@ -162,11 +142,15 @@ export default function TasksPanel({
                           )
                         }
                       >
-                        <option value="LOW">LOW</option>
+                        <option value="LOW">
+                          LOW
+                        </option>
                         <option value="MEDIUM">
                           MEDIUM
                         </option>
-                        <option value="HIGH">HIGH</option>
+                        <option value="HIGH">
+                          HIGH
+                        </option>
                       </select>
                     </>
                   ) : (
@@ -181,7 +165,6 @@ export default function TasksPanel({
                   )}
                 </div>
 
-                {/* Actions */}
                 <div className="flex gap-2">
                   <button
                     className="icon-button subtle"
@@ -196,7 +179,12 @@ export default function TasksPanel({
                   <button
                     className="icon-button subtle"
                     onClick={() =>
-                      deleteTask(task.id)
+                      setTasks((prev) =>
+                        prev.filter(
+                          (t) =>
+                            t.id !== task.id
+                        )
+                      )
                     }
                   >
                     <Trash2 />
