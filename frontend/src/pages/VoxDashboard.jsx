@@ -142,15 +142,19 @@ export default function VoxDashboard() {
         content,
       });
 
+     if (res.data?.content) {
       setMessages((prev) => [...prev, res.data]);
-      initializeData(); // 👈 refresh tasks, memories, events
-    } catch (err) {
-      console.error("Chat error:", err);
-      toast.error("Failed to send message");
-    } finally {
-      setIsLoading(false);
     }
-  };
+    
+    initializeData();
+    
+        } catch (err) {
+          console.error("Chat error:", err);
+          toast.error("Failed to send message");
+        } finally {
+          setIsLoading(false);
+        }
+      };
 
   const clearChat = async () => {
     try {
@@ -308,4 +312,5 @@ export default function VoxDashboard() {
     </div>
   );
 }
+
 
