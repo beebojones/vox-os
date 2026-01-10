@@ -20,14 +20,14 @@ export default function TasksPanel({ tasks, setTasks }) {
 
   /* ================= ACTIONS ================= */
 
-  function startAdd() {
-    setIsAdding(true);
+  function start() {
+    setIsing(true);
     setNewText("");
     setNewPriority("LOW");
   }
 
-  function cancelAdd() {
-    setIsAdding(false);
+  function cancel() {
+    setIsing(false);
     setNewText("");
   }
 
@@ -98,62 +98,83 @@ export default function TasksPanel({ tasks, setTasks }) {
       </div>
 
       {/* ADD MODE */}
-      {isAdding && (
-        <div
-          className="mb-4 p-3 rounded-xl
-                     bg-black/40 ring-1 ring-white/10"
+        {isAdding && (
+    <div
+      className="mb-4 p-3 rounded-xl
+                 bg-black/45
+                 ring-1 ring-white/10
+                 shadow-inner"
+    >
+      <input
+        className="console-input w-full mb-3
+                   bg-black/55
+                   text-sm
+                   placeholder:text-white/30
+                   focus:ring-cyan-400/50"
+        placeholder="Task description"
+        value={newText}
+        onChange={(e) => setNewText(e.target.value)}
+        autoFocus
+      />
+  
+      {/* CONTROLS ROW */}
+      <div className="flex items-center gap-3">
+        {/* priority pill (not a select) */}
+        <button
+          type="button"
+          onClick={() =>
+            setNewPriority(
+              newPriority === "LOW"
+                ? "MEDIUM"
+                : newPriority === "MEDIUM"
+                ? "HIGH"
+                : "LOW"
+            )
+          }
+          className="px-3 py-1 rounded-full
+                     text-[10px] tracking-wide
+                     uppercase
+                     bg-white/5
+                     ring-1 ring-white/15
+                     hover:bg-white/10
+                     transition"
         >
-          <input
-            className="console-input w-full mb-2
-                       bg-black/50
-                       focus:ring-cyan-400/60"
-            placeholder="Task description"
-            value={newText}
-            onChange={(e) => setNewText(e.target.value)}
-            autoFocus
-          />
+          {newPriority}
+        </button>
+  
+        <div className="flex-1" />
+  
+        {/* confirm */}
+        <button
+          onClick={confirmAdd}
+          className="w-9 h-9 rounded-full
+                     bg-gradient-to-br from-green-400/30 to-green-600/30
+                     ring-1 ring-green-400/40
+                     shadow-[inset_0_1px_2px_rgba(255,255,255,0.2)]
+                     hover:shadow-[0_0_12px_rgba(34,197,94,0.6)]
+                     transition"
+          aria-label="Confirm"
+        >
+          <Check className="w-4 h-4 text-green-300" />
+        </button>
+  
+        {/* cancel */}
+        <button
+          onClick={cancelAdd}
+          className="w-9 h-9 rounded-full
+                     bg-gradient-to-br from-red-400/30 to-red-600/30
+                     ring-1 ring-red-400/40
+                     shadow-[inset_0_1px_2px_rgba(255,255,255,0.2)]
+                     hover:shadow-[0_0_12px_rgba(239,68,68,0.6)]
+                     transition"
+          aria-label="Cancel"
+        >
+          <X className="w-4 h-4 text-red-300" />
+        </button>
+      </div>
+    </div>
+  )}
 
-          <div className="flex items-center gap-2">
-            {/* priority pill */}
-            <select
-              className="px-3 py-1 rounded-full
-                         bg-black/50 text-xs tracking-wide
-                         ring-1 ring-white/15
-                         focus:ring-cyan-400/50"
-              value={newPriority}
-              onChange={(e) => setNewPriority(e.target.value)}
-            >
-              <option>LOW</option>
-              <option>MEDIUM</option>
-              <option>HIGH</option>
-            </select>
-
-            <div className="flex-1" />
-
-            <button
-              onClick={confirmAdd}
-              className="w-9 h-9 rounded-full
-                         border border-green-400/60
-                         text-green-400
-                         hover:shadow-[0_0_10px_rgba(34,197,94,0.6)]"
-              aria-label="Confirm"
-            >
-              <Check className="w-4 h-4" />
-            </button>
-
-            <button
-              onClick={cancelAdd}
-              className="w-9 h-9 rounded-full
-                         border border-red-400/60
-                         text-red-400
-                         hover:shadow-[0_0_10px_rgba(239,68,68,0.6)]"
-              aria-label="Cancel"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* TASK LIST */}
       <div className="space-y-2">
