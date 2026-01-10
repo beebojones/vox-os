@@ -9,7 +9,9 @@ import {
   X,
 } from "lucide-react";
 
-export default function TasksPanel({ tasks, setTasks }) {
+export default function TasksPanel({ tasks = [], setTasks }) {
+  /* ================= STATE ================= */
+
   const [isAdding, setIsAdding] = useState(false);
   const [newText, setNewText] = useState("");
   const [newPriority, setNewPriority] = useState("LOW");
@@ -20,24 +22,24 @@ export default function TasksPanel({ tasks, setTasks }) {
 
   /* ================= ACTIONS ================= */
 
-  function start() {
-    setIsing(true);
+  const startAdd = () => {
+    setIsAdding(true);
     setNewText("");
     setNewPriority("LOW");
-  }
+  };
 
-  function cancel() {
-    setIsing(false);
+  const cancelAdd = () => {
+    setIsAdding(false);
     setNewText("");
-  }
+  };
 
-  function confirmAdd() {
+  const confirmAdd = () => {
     if (!newText.trim()) return;
 
     setTasks((prev) => [
       ...prev,
       {
-        id: crypto.randomUUID(),
+        id: Date.now().toString(),
         title: newText.trim(),
         priority: newPriority,
         status: "pending",
@@ -45,19 +47,19 @@ export default function TasksPanel({ tasks, setTasks }) {
     ]);
 
     cancelAdd();
-  }
+  };
 
-  function toggleComplete(id) {
+  const toggleComplete = (id) => {
     setTasks((prev) => prev.filter((t) => t.id !== id));
-  }
+  };
 
-  function startEdit(task) {
+  const startEdit = (task) => {
     setEditingId(task.id);
     setEditingText(task.title);
     setEditingPriority(task.priority);
-  }
+  };
 
-  function saveEdit(id) {
+  const saveEdit = (id) => {
     setTasks((prev) =>
       prev.map((t) =>
         t.id === id
@@ -66,11 +68,11 @@ export default function TasksPanel({ tasks, setTasks }) {
       )
     );
     setEditingId(null);
-  }
+  };
 
-  function deleteTask(id) {
+  const deleteTask = (id) => {
     setTasks((prev) => prev.filter((t) => t.id !== id));
-  }
+  };
 
   /* ================= RENDER ================= */
 
@@ -84,117 +86,82 @@ export default function TasksPanel({ tasks, setTasks }) {
           <span className="console-badge">{tasks.length}</span>
         </div>
 
-        <button
-          onClick={startAdd}
-          className="w-9 h-9 rounded-full border border-cyan-400/40
-                     flex items-center justify-center
-                     bg-black/30
-                     hover:shadow-[0_0_14px_rgba(34,211,238,0.55)]
-                     transition"
-          aria-label="Add task"
-        >
-          <Plus className="w-4 h-4" />
-        </button>
+        {!isAdding && (
+          <button
+            onClick={startAdd}
+            className="w-9 h-9 rounded-full border border-cyan-400/40
+                       flex items-center justify-center
+                       hover:shadow-[0_0_12px_rgba(34,211,238,0.6)]
+                       transition"
+            aria-label="Add task"
+          >
+            <Plus />
+          </button>
+        )}
       </div>
 
       {/* ADD MODE */}
-        {isAdding && (
-    <div
-      className="mb-4 p-3 rounded-xl
-                 bg-black/45
-                 ring-1 ring-white/10
-                 shadow-inner"
-    >
-      <input
-        className="console-input w-full mb-3
-                   bg-black/55
-                   text-sm
-                   placeholder:text-white/30
-                   focus:ring-cyan-400/50"
-        placeholder="Task description"
-        value={newText}
-        onChange={(e) => setNewText(e.target.value)}
-        autoFocus
-      />
-  
-      {/* CONTROLS ROW */}
-      <div className="flex items-center gap-3">
-        {/* priority pill (not a select) */}
-        <button
-          type="button"
-          onClick={() =>
-            setNewPriority(
-              newPriority === "LOW"
-                ? "MEDIUM"
-                : newPriority === "MEDIUM"
-                ? "HIGH"
-                : "LOW"
-            )
-          }
-          className="px-3 py-1 rounded-full
-                     text-[10px] tracking-wide
-                     uppercase
-                     bg-white/5
-                     ring-1 ring-white/15
-                     hover:bg-white/10
-                     transition"
-        >
-          {newPriority}
-        </button>
-  
-        <div className="flex-1" />
-  
-        {/* confirm */}
-        <button
-          onClick={confirmAdd}
-          className="w-9 h-9 rounded-full
-                     bg-gradient-to-br from-green-400/30 to-green-600/30
-                     ring-1 ring-green-400/40
-                     shadow-[inset_0_1px_2px_rgba(255,255,255,0.2)]
-                     hover:shadow-[0_0_12px_rgba(34,197,94,0.6)]
-                     transition"
-          aria-label="Confirm"
-        >
-          <Check className="w-4 h-4 text-green-300" />
-        </button>
-  
-        {/* cancel */}
-        <button
-          onClick={cancelAdd}
-          className="w-9 h-9 rounded-full
-                     bg-gradient-to-br from-red-400/30 to-red-600/30
-                     ring-1 ring-red-400/40
-                     shadow-[inset_0_1px_2px_rgba(255,255,255,0.2)]
-                     hover:shadow-[0_0_12px_rgba(239,68,68,0.6)]
-                     transition"
-          aria-label="Cancel"
-        >
-          <X className="w-4 h-4 text-red-300" />
-        </button>
-      </div>
-    </div>
-  )}
+      {isAdding && (
+        <div className="mb-4 space-y-3">
+          <input
+            className="console-input w-full bg-black/40
+                       ring-1 ring-white/10 focus:ring-cyan-400/60"
+            placeholder="Task description"
+            value={newText}
+            onChange={(e) => setNewText(e.target.value)}
+            autoFocus
+          />
 
+          <div className="flex items-center gap-2">
+            <select
+              className="console-input text-xs uppercase tracking-wider
+                         bg-black/40 ring-1 ring-white/10 w-32"
+              value={newPriority}
+              onChange={(e) => setNewPriority(e.target.value)}
+            >
+              <option>LOW</option>
+              <option>MEDIUM</option>
+              <option>HIGH</option>
+            </select>
+
+            <button
+              onClick={confirmAdd}
+              className="w-9 h-9 rounded-full border border-green-400
+                         flex items-center justify-center text-green-400"
+              aria-label="Confirm"
+            >
+              <Check />
+            </button>
+
+            <button
+              onClick={cancelAdd}
+              className="w-9 h-9 rounded-full border border-red-400
+                         flex items-center justify-center text-red-400"
+              aria-label="Cancel"
+            >
+              <X />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* TASK LIST */}
       <div className="space-y-2">
         {tasks.map((task) => (
           <div
             key={task.id}
-            className="flex items-start gap-3 px-2 py-2 rounded-lg
+            className="flex items-start gap-3 p-2 rounded-lg
                        hover:bg-white/5 transition"
           >
             {/* RADIO */}
             <button
               onClick={() => toggleComplete(task.id)}
-              className="w-4 h-4 mt-1 rounded-full
-                         border border-white/40
-                         hover:border-cyan-400"
+              className="w-4 h-4 rounded-full border border-white/40 mt-1"
               aria-label="Complete task"
             />
 
             {/* CONTENT */}
-            <div className="flex-1 max-w-[75%]">
+            <div className="flex-1">
               {editingId === task.id ? (
                 <>
                   <input
@@ -203,9 +170,7 @@ export default function TasksPanel({ tasks, setTasks }) {
                     onChange={(e) => setEditingText(e.target.value)}
                   />
                   <select
-                    className="px-3 py-1 rounded-full
-                               bg-black/50 text-xs
-                               ring-1 ring-white/15"
+                    className="console-input text-xs uppercase w-32"
                     value={editingPriority}
                     onChange={(e) =>
                       setEditingPriority(e.target.value)
@@ -221,14 +186,7 @@ export default function TasksPanel({ tasks, setTasks }) {
                   <div className="text-sm leading-tight">
                     {task.title}
                   </div>
-                  <div
-                    className="inline-block mt-0.5
-                               px-2 py-[2px]
-                               rounded-full text-[10px]
-                               tracking-wide
-                               text-soft
-                               bg-white/5"
-                  >
+                  <div className="text-[10px] uppercase tracking-widest text-soft mt-0.5">
                     {task.priority}
                   </div>
                 </>
@@ -236,30 +194,24 @@ export default function TasksPanel({ tasks, setTasks }) {
             </div>
 
             {/* ACTIONS */}
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 mt-1">
               <button
                 onClick={() =>
                   editingId === task.id
                     ? saveEdit(task.id)
                     : startEdit(task)
                 }
-                className="w-8 h-8 rounded-full
-                           bg-black/40
-                           hover:bg-white/10
-                           flex items-center justify-center"
+                className="icon-button subtle"
                 aria-label="Edit task"
               >
-                <Pencil className="w-4 h-4" />
+                <Pencil />
               </button>
               <button
                 onClick={() => deleteTask(task.id)}
-                className="w-8 h-8 rounded-full
-                           bg-black/40
-                           hover:bg-red-500/20
-                           flex items-center justify-center"
+                className="icon-button subtle"
                 aria-label="Delete task"
               >
-                <Trash2 className="w-4 h-4" />
+                <Trash2 />
               </button>
             </div>
           </div>
