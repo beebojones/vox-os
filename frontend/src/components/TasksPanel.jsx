@@ -88,20 +88,25 @@ export default function TasksPanel({ tasks, setTasks }) {
           onClick={startAdd}
           className="w-9 h-9 rounded-full border border-cyan-400/40
                      flex items-center justify-center
-                     hover:shadow-[0_0_12px_rgba(34,211,238,0.6)]
+                     bg-black/30
+                     hover:shadow-[0_0_14px_rgba(34,211,238,0.55)]
                      transition"
           aria-label="Add task"
         >
-          <Plus />
+          <Plus className="w-4 h-4" />
         </button>
       </div>
 
       {/* ADD MODE */}
       {isAdding && (
-        <div className="mb-4 space-y-3">
+        <div
+          className="mb-4 p-3 rounded-xl
+                     bg-black/40 ring-1 ring-white/10"
+        >
           <input
-            className="console-input w-full bg-black/40
-                       ring-1 ring-white/10 focus:ring-cyan-400/60"
+            className="console-input w-full mb-2
+                       bg-black/50
+                       focus:ring-cyan-400/60"
             placeholder="Task description"
             value={newText}
             onChange={(e) => setNewText(e.target.value)}
@@ -109,8 +114,12 @@ export default function TasksPanel({ tasks, setTasks }) {
           />
 
           <div className="flex items-center gap-2">
+            {/* priority pill */}
             <select
-              className="console-input bg-black/40 ring-1 ring-white/10"
+              className="px-3 py-1 rounded-full
+                         bg-black/50 text-xs tracking-wide
+                         ring-1 ring-white/15
+                         focus:ring-cyan-400/50"
               value={newPriority}
               onChange={(e) => setNewPriority(e.target.value)}
             >
@@ -119,22 +128,28 @@ export default function TasksPanel({ tasks, setTasks }) {
               <option>HIGH</option>
             </select>
 
+            <div className="flex-1" />
+
             <button
               onClick={confirmAdd}
-              className="w-9 h-9 rounded-full border border-green-400
-                         flex items-center justify-center text-green-400"
+              className="w-9 h-9 rounded-full
+                         border border-green-400/60
+                         text-green-400
+                         hover:shadow-[0_0_10px_rgba(34,197,94,0.6)]"
               aria-label="Confirm"
             >
-              <Check />
+              <Check className="w-4 h-4" />
             </button>
 
             <button
               onClick={cancelAdd}
-              className="w-9 h-9 rounded-full border border-red-400
-                         flex items-center justify-center text-red-400"
+              className="w-9 h-9 rounded-full
+                         border border-red-400/60
+                         text-red-400
+                         hover:shadow-[0_0_10px_rgba(239,68,68,0.6)]"
               aria-label="Cancel"
             >
-              <X />
+              <X className="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -145,18 +160,20 @@ export default function TasksPanel({ tasks, setTasks }) {
         {tasks.map((task) => (
           <div
             key={task.id}
-            className="flex items-start gap-3 p-2 rounded-lg
+            className="flex items-start gap-3 px-2 py-2 rounded-lg
                        hover:bg-white/5 transition"
           >
             {/* RADIO */}
             <button
               onClick={() => toggleComplete(task.id)}
-              className="w-4 h-4 rounded-full border border-white/40 mt-1"
+              className="w-4 h-4 mt-1 rounded-full
+                         border border-white/40
+                         hover:border-cyan-400"
               aria-label="Complete task"
             />
 
             {/* CONTENT */}
-            <div className="flex-1">
+            <div className="flex-1 max-w-[75%]">
               {editingId === task.id ? (
                 <>
                   <input
@@ -165,7 +182,9 @@ export default function TasksPanel({ tasks, setTasks }) {
                     onChange={(e) => setEditingText(e.target.value)}
                   />
                   <select
-                    className="console-input"
+                    className="px-3 py-1 rounded-full
+                               bg-black/50 text-xs
+                               ring-1 ring-white/15"
                     value={editingPriority}
                     onChange={(e) =>
                       setEditingPriority(e.target.value)
@@ -178,8 +197,17 @@ export default function TasksPanel({ tasks, setTasks }) {
                 </>
               ) : (
                 <>
-                  <div className="text-sm">{task.title}</div>
-                  <div className="text-xs text-soft mt-0.5">
+                  <div className="text-sm leading-tight">
+                    {task.title}
+                  </div>
+                  <div
+                    className="inline-block mt-0.5
+                               px-2 py-[2px]
+                               rounded-full text-[10px]
+                               tracking-wide
+                               text-soft
+                               bg-white/5"
+                  >
                     {task.priority}
                   </div>
                 </>
@@ -194,17 +222,23 @@ export default function TasksPanel({ tasks, setTasks }) {
                     ? saveEdit(task.id)
                     : startEdit(task)
                 }
-                className="icon-button subtle"
+                className="w-8 h-8 rounded-full
+                           bg-black/40
+                           hover:bg-white/10
+                           flex items-center justify-center"
                 aria-label="Edit task"
               >
-                <Pencil />
+                <Pencil className="w-4 h-4" />
               </button>
               <button
                 onClick={() => deleteTask(task.id)}
-                className="icon-button subtle"
+                className="w-8 h-8 rounded-full
+                           bg-black/40
+                           hover:bg-red-500/20
+                           flex items-center justify-center"
                 aria-label="Delete task"
               >
-                <Trash2 />
+                <Trash2 className="w-4 h-4" />
               </button>
             </div>
           </div>
